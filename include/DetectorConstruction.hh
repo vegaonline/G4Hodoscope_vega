@@ -11,20 +11,30 @@ class G4Material;
 class G4VSensitiveDetector;
 class G4VisAttributes;
 
-class DetectorConstruction : public G4VUserDetectorConstruction {
+class DetectorConstruction : public G4VUserDetectorConstruction
+{
   public:
-    DetectorConstruction();
-    virtual ~DetectorConstruction();
+    DetectorConstruction ();
+    virtual ~DetectorConstruction ();
 
   public:
-    virtual G4VPhysicalVolume* Construct();
+    virtual G4VPhysicalVolume* Construct ();
 
   private:
     G4Material* air;
     G4Material* argongas;
-    G4Material* scintillator;
+    G4Material* aluminium;
+    G4Material* copper;
     G4Material* lead;
+
+    G4Material* scintillator;
+    G4Material* C2H4;
+    G4Material* C3H6;
+    G4Material* CO2;
+    G4Material* ArCO2;
     G4Material* CsI;
+
+    G4Material* GEM;
 
     G4VisAttributes* worldVisAtt;
     G4VisAttributes* hodoscopeVisAtt;
