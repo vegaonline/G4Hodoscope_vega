@@ -1,9 +1,11 @@
 #ifndef DetectorConstruction_h
 #define DetectorConstruction_h 1
 
-#include "G4UserDetectorConstruction.hh"
-#include "Globals.hh"
+#include "G4VUserDetectorConstruction.hh"
+#include "globals.hh"
 #include "G4RotationMatrix.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4SystemOfUnits.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
@@ -19,6 +21,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
   public:
     virtual G4VPhysicalVolume* Construct ();
+  private:
+    void ConstructMaterials();
+    void DestroyMaterials();
 
   private:
     G4Material* air;
@@ -34,7 +39,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4Material* ArCO2;
     G4Material* CsI;
 
-    G4Material* GEM;
+    
 
     G4VisAttributes* worldVisAtt;
     G4VisAttributes* hodoscopeVisAtt;
@@ -52,7 +57,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4double objWid;
     G4double objHt;
 
-    G4Int numDet;        // total number of detectors 3 top and 3 bottom
-    G4Int numChanPerDet; // total number of channels per detectors
-}
+    G4int numDet;        // total number of detectors 3 top and 3 bottom
+    G4int numChanPerDet; // total number of channels per detectors
+};
 #endif
