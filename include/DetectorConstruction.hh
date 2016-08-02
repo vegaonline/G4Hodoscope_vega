@@ -8,7 +8,7 @@
 #include "G4SystemOfUnits.hh"
 
 class G4VPhysicalVolume;
-class G4LogicalVolume;
+// class G4LogicalVolume;
 class G4Material;
 class G4VSensitiveDetector;
 class G4VisAttributes;
@@ -21,6 +21,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
   public:
     virtual G4VPhysicalVolume* Construct ();
+
   private:
     void ConstructMaterials();
     void DestroyMaterials();
@@ -38,13 +39,11 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4Material* C3H6;
     G4Material* CO2;
     G4Material* ArCO2;
-    G4Material* CsI;
-
-    
+    G4Material* CsI;    
 
     G4VisAttributes* worldVisAtt;
-    G4VisAttributes* hodoscopeVisAtt;
-    G4VisAttributes* chamberVisAtt;
+    G4VisAttributes* hodoVisAtt;
+    G4VisAttributes* GEMVisAtt;
 
     G4double deltaStacks; // difference between upper and lower stack where object stays
     G4double deltaDet;    // gap between each consecutive detector in either upper or lower

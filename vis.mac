@@ -1,6 +1,6 @@
 # macro for muonHodo
- /vis/open OGLIX
-# /vis/open OGLI
+/vis/open OGLIX
+/vis/open OGLI
 /vis/open RayTracerX
 
 # create empty scene

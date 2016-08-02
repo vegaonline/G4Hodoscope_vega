@@ -11,6 +11,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4PVPlacement.hh"
+#include "G4PVParameterised.hh"
 #include "G4UserLimits.hh"
 
 #include "G4SDManager.hh"
@@ -19,6 +20,8 @@
 
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
+
+#include "G4ios.hh"
 
 DetectorConstruction::DetectorConstruction ()
     : air ( 0 )
@@ -45,9 +48,10 @@ DetectorConstruction::DetectorConstruction ()
     , numDet ( 6 )
     , numChanPerDet ( 32 )
     , worldVisAtt ( 0 )
-    , hodoscopeVisAtt ( 0 )
-    , chamberVisAtt ( 0 )
+    , hodoVisAtt ( 0 )
+    , GEMVisAtt ( 0 )
 {
+//  ConstructMaterials();
 }
 
 DetectorConstruction::~DetectorConstruction ()
@@ -55,8 +59,8 @@ DetectorConstruction::~DetectorConstruction ()
     DestroyMaterials();
 
     delete worldVisAtt;
-    delete hodoscopeVisAtt;
-    delete chamberVisAtt;
+    delete hodoVisAtt;
+    delete GEMVisAtt;
 }
 
 void DetectorConstruction::ConstructMaterials ()
@@ -195,7 +199,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
     
     G4bool checkOverlaps = true;    
 
-    ConstructMaterials();
+     ConstructMaterials();
 
     // geometry ******
     detSide1 = 160.0*cm; detSide2 = 90.0*cm; detSide3 = 160.0*cm; detSide4 = 60.0*cm;
@@ -222,11 +226,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
     G4LogicalVolume* worldLogical = new G4LogicalVolume ( worldSolid, air, "worldLogical", 0, 0, 0 );
     G4VPhysicalVolume* worldPhysical
       = new G4PVPlacement ( 0, G4ThreeVector(), worldLogical, "worldPhysical", 0, 0, 0, checkOverlaps );
-
+ 
     // Place the hodoscope in the world volume
     G4VSolid* hodoscopeSolid = new G4Box ( "hodoscopeBox", 0.5 * hodoLen, 0.5 * hodoWid, 0.5 * hodoHt );
     G4LogicalVolume* hodoscopeLV = new G4LogicalVolume ( hodoscopeSolid, air, "hodoscopeogical", 0, 0, 0 );
-    new G4PVPlacement ( 0, G4ThreeVector ( 0., 0., 0. ), hodoscopeLV, "hodoscopePhysical", worldLogical, 0, 0, 0, checkOverlaps );
+    new G4PVPlacement ( 0, G4ThreeVector ( 0., 0., 0. ), hodoscopeLV, "hodoscopePhysical", worldLogical, 0, 0, checkOverlaps );
 
     // GEM one layer Cu - C2H4 - Cu
     G4double dx1Trd = 0.5 * detSide2;
@@ -242,7 +246,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
     
     // Drift chamber
     G4VSolid* driftCuTop = new G4Trd("DriftCuTop", dx1Trd, dx2Trd, 0.5*GEMCuHt, 0.5*GEMCuHt, dzTrd);
-    G4LogicalVolume* driftCuTopLV = new G4LogicalVolume(drfitCuTop, copper, "driftCuTop", 0, 0, 0);
+    G4LogicalVolume* driftCuTopLV = new G4LogicalVolume(driftCuTop, copper, "driftCuTop", 0, 0, 0);
     
     G4VSolid* driftChamber = new G4Trd("Drift", dx1Trd, dx2Trd, 0.5 * GEMDriftHt, 0.5 * GEMDriftHt, dzTrd);
     G4LogicalVolume* driftChamberLV = new G4LogicalVolume(driftChamber, ArCO2, "Drift", 0, 0, 0);
@@ -251,18 +255,29 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
     G4LogicalVolume* readerCuBotLV = new G4LogicalVolume(readerCuBot, copper, "readerCuBot", 0, 0, 0);
 
     // Construction of single GEM
-    G4RotationMatrix* Ritem = new G4RotationMatrix();    
+    G4RotationMatrix Ritem;    
     G4ThreeVector Titem;
 
     G4VSolid* GEMDet = new G4Trd("GemDet", dx1Trd, dx2Trd, 0.5 * detHeight, 0.5 * detHeight, dzTrd);
     G4LogicalVolume* GEMDetLV = new G4LogicalVolume(GEMDet, ArCO2, "GEMDetector");
-    Ritem->rotateX(90.0*deg); Ritem->rotateZ(90.0*deg); Titem.setX(0.0); Titem.setY(0.0); Titem.setZ(-dzTrd);
-    new G4PVPlacement(G4Transform3D(Ritem, Titem), GEMDetLV, "GEMdetector", hodoscopeLV, 0, 0, 0, checkOverlaps);
+    Ritem.rotateX(90.0*deg); Ritem.rotateZ(90.0*deg); 
+    Titem.setX(0.0); Titem.setY(0.0); Titem.setZ(0.5*hodoHt);
+    new G4PVPlacement(G4Transform3D(Ritem, Titem), GEMDetLV, "GEMdetector", hodoscopeLV, 0, 0, checkOverlaps);
     
     // Place drift board, GEM foils and readout in one GEM
     G4RotationMatrix Ra; G4ThreeVector Ta;
     Ta.setX(0.0); Ta.setY(-0.5*detHeight); Ta.setZ(0.0);
-    new G4PVPlacement(0, Ta, driftCuTopLV, "driftPhysical", GEMDetLV
+    new G4PVPlacement(0, Ta, driftCuTopLV, "driftPhysical", GEMDetLV, 0, 0, checkOverlaps);
+    
+
+    // Setting Visual Attribute
+    worldVisAtt = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0));
+    worldVisAtt->SetVisibility(false);
+    worldLogical->SetVisAttributes(worldVisAtt);
+    
+    hodoVisAtt = new G4VisAttributes(G4Colour(0.8888, 0.0, 0.0));
+    hodoVisAtt->SetForceWireframe(true);
+    hodoscopeLV->SetVisAttributes(hodoVisAtt);
 
     
 
