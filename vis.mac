@@ -1,0 +1,14 @@
+# macro for muonHodo
+ /vis/open OGLIX
+# /vis/open OGLI
+/vis/open RayTracerX
+
+# create empty scene
+/vis/scene/create
+
+
+/run/beamOn 1
+
+# draw detector
+/vis/viewer/flush
+# /vis/viewer/refresh

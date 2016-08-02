@@ -170,16 +170,43 @@ void DetectorConstruction::DestroyMaterials ()
     elemTable->clear ();
 }
 
+void DetectorConstruction::DumpGeometricalTree(G4VPhysicalVolume* aVolume,G4int depth)
+{
+  for(int isp=0;isp<depth;isp++)
+  { G4cout << "  "; }
+  G4cout << aVolume->GetName() << "[" << aVolume->GetCopyNo() << "] "
+         << aVolume->GetLogicalVolume()->GetName() << " "
+         << aVolume->GetLogicalVolume()->GetNoDaughters() << " "
+         << aVolume->GetLogicalVolume()->GetMaterial()->GetName();
+  if(aVolume->GetLogicalVolume()->GetSensitiveDetector())
+  {
+    G4cout << " " << aVolume->GetLogicalVolume()->GetSensitiveDetector()
+                            ->GetFullPathName();
+  }
+  G4cout << G4endl;
+  for(int i=0;i<aVolume->GetLogicalVolume()->GetNoDaughters();i++)
+  { DumpGeometricalTree(aVolume->GetLogicalVolume()->GetDaughter(i),depth+1); }
+}
+
+
 G4VPhysicalVolume* DetectorConstruction::Construct ()
 {
     G4VSensitiveDetector* hodoscope;
-    G4VSensitiveDetector* chamber1;
+    
+    G4bool checkOverlaps = true;    
 
     ConstructMaterials();
 
     // geometry ******
     detSide1 = 160.0*cm; detSide2 = 90.0*cm; detSide3 = 160.0*cm; detSide4 = 60.0*cm;
-    detHeight = 5.0*cm;  deltaDet = 3.0*cm; deltaStacks = 45.0*cm; 
+    deltaDet = 3.0*cm; deltaStacks = 45.0*cm; 
+
+    G4double GEMCathodeHt = 0.3*cm;   G4double GEMDriftHt = 0.3*cm; 
+    G4double G1G2gap = 0.1*cm;  G4double G2G3gap = 0.2*cm; G4double G3readergap = 0.1*cm;
+    G4double GEMreaderHt = 0.3*cm;
+    G4double GEMCuHt = 0.5e-3*cm; G4double GEMPolyHt = 5.0e-3*cm;  G4double GEMHt = GEMPolyHt + 2.0 * GEMCuHt;
+    detHeight = GEMCathodeHt + GEMDriftHt + G1G2gap + G2G3gap + G3readergap + GEMreaderHt + GEMHt;
+
     objLen = 10.0*cm; objWid = 10.0*cm; objHt = 10.0*cm;
 
     G4double worldx = 2.0 * m; // effectively world dim = 4m X 4m X 10m
@@ -194,21 +221,57 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
     G4VSolid* worldSolid = new G4Box ( "worldBox", worldx, worldy, worldz );
     G4LogicalVolume* worldLogical = new G4LogicalVolume ( worldSolid, air, "worldLogical", 0, 0, 0 );
     G4VPhysicalVolume* worldPhysical
-        = new G4PVPlacement ( 0, G4ThreeVector (), worldLogical, "worldPhysical", 0, 0, 0 );
+      = new G4PVPlacement ( 0, G4ThreeVector(), worldLogical, "worldPhysical", 0, 0, 0, checkOverlaps );
 
     // Place the hodoscope in the world volume
     G4VSolid* hodoscopeSolid = new G4Box ( "hodoscopeBox", 0.5 * hodoLen, 0.5 * hodoWid, 0.5 * hodoHt );
-    G4LogicalVolume* hodoscopeLogical = new G4LogicalVolume ( hodoscopeSolid, air, "hodoscopeogical", 0, 0, 0 );
-    new G4PVPlacement ( 0, G4ThreeVector ( 0., 0., 0. ), hodoscopeLogical, "hodoscopePhysical", worldLogical, 0, 0 );
+    G4LogicalVolume* hodoscopeLV = new G4LogicalVolume ( hodoscopeSolid, air, "hodoscopeogical", 0, 0, 0 );
+    new G4PVPlacement ( 0, G4ThreeVector ( 0., 0., 0. ), hodoscopeLV, "hodoscopePhysical", worldLogical, 0, 0, 0, checkOverlaps );
 
     // GEM one layer Cu - C2H4 - Cu
-    G4VSolid* gemCuTop = new G4Trd ( "CuTop", detSide2, detSide4, detHeight, detHeight, detSide1 );
+    G4double dx1Trd = 0.5 * detSide2;
+    G4double dx2Trd = 0.5 * detSide4;
+    G4double dzTrd = 0.5 * detSide1;
+    
+    G4VSolid* gemCuTop = new G4Trd ( "CuTop", dx1Trd, dx2Trd, 0.5 * GEMCuHt, 0.5 * GEMCuHt, dzTrd );
     G4LogicalVolume* gemCuTopLV = new G4LogicalVolume ( gemCuTop, copper, "gemCuTopLV", 0, 0, 0 );
-    G4VSolid* gemPoly = new G4Trd ( "Poly", detSide2, detSide4, detHeight, detHeight, detSide1 );
+    G4VSolid* gemPoly = new G4Trd ( "Poly", dx1Trd, dx2Trd, 0.5 * GEMPolyHt, 0.5 * GEMPolyHt, dzTrd);
     G4LogicalVolume* gemPolyLV = new G4LogicalVolume ( gemPoly, C2H4, "gemPolyLV", 0, 0, 0 );
-    G4VSolid* gemCuBot = new G4Trd ( "CuBot", detSide2, detSide4, detHeight, detHeight, detSide1 );
+    G4VSolid* gemCuBot = new G4Trd ( "CuBot", dx1Trd, dx2Trd, 0.5 * GEMCuHt, 0.5 * GEMCuHt, dzTrd);
     G4LogicalVolume* gemCuBotLV = new G4LogicalVolume ( gemCuBot, copper, "gemCuBotLV", 0, 0, 0 );
+    
+    // Drift chamber
+    G4VSolid* driftCuTop = new G4Trd("DriftCuTop", dx1Trd, dx2Trd, 0.5*GEMCuHt, 0.5*GEMCuHt, dzTrd);
+    G4LogicalVolume* driftCuTopLV = new G4LogicalVolume(drfitCuTop, copper, "driftCuTop", 0, 0, 0);
+    
+    G4VSolid* driftChamber = new G4Trd("Drift", dx1Trd, dx2Trd, 0.5 * GEMDriftHt, 0.5 * GEMDriftHt, dzTrd);
+    G4LogicalVolume* driftChamberLV = new G4LogicalVolume(driftChamber, ArCO2, "Drift", 0, 0, 0);
+    
+    G4VSolid* readerCuBot = new G4Trd("readerCuBot", dx1Trd, dx2Trd, 0.5*GEMCuHt, 0.5*GEMCuHt, dzTrd);
+    G4LogicalVolume* readerCuBotLV = new G4LogicalVolume(readerCuBot, copper, "readerCuBot", 0, 0, 0);
 
+    // Construction of single GEM
+    G4RotationMatrix* Ritem = new G4RotationMatrix();    
+    G4ThreeVector Titem;
+
+    G4VSolid* GEMDet = new G4Trd("GemDet", dx1Trd, dx2Trd, 0.5 * detHeight, 0.5 * detHeight, dzTrd);
+    G4LogicalVolume* GEMDetLV = new G4LogicalVolume(GEMDet, ArCO2, "GEMDetector");
+    Ritem->rotateX(90.0*deg); Ritem->rotateZ(90.0*deg); Titem.setX(0.0); Titem.setY(0.0); Titem.setZ(-dzTrd);
+    new G4PVPlacement(G4Transform3D(Ritem, Titem), GEMDetLV, "GEMdetector", hodoscopeLV, 0, 0, 0, checkOverlaps);
+    
+    // Place drift board, GEM foils and readout in one GEM
+    G4RotationMatrix Ra; G4ThreeVector Ta;
+    Ta.setX(0.0); Ta.setY(-0.5*detHeight); Ta.setZ(0.0);
+    new G4PVPlacement(0, Ta, driftCuTopLV, "driftPhysical", GEMDetLV
+
+    
+
+    // return the world physical volume ----------------------------------------
+
+    G4cout << G4endl << "The geometrical tree defined are : " << G4endl << G4endl;
+    DumpGeometricalTree(worldPhysical);
+
+    return worldPhysical;
 
 
 

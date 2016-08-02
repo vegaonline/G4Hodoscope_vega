@@ -24,6 +24,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   private:
     void ConstructMaterials();
     void DestroyMaterials();
+    void DumpGeometricalTree(G4VPhysicalVolume* aVolume,G4int depth=0);
 
   private:
     G4Material* air;

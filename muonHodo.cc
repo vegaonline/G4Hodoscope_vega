@@ -29,7 +29,7 @@ int main ( int argc, char** argv )
     G4RunManager* runManager = new G4RunManager;
 
     // mandatory initialization classes with runManager
-    runManager->SetUserInitialization ( new DetectorConstruction );
+    runManager->SetUserInitialization ( new DetectorConstruction() );
     // runManager->SetUserInitialization(new PhysicsList);
 
     // User Action Initialization classes <-- I have seen that this is optional
@@ -48,7 +48,7 @@ int main ( int argc, char** argv )
         G4String filename = argv[1];
         UImanager->ApplyCommand ( command + filename );
     } else {
-        UImanager->ApplyCommand ( "/control/execute init_vis.mac" );
+        UImanager->ApplyCommand ( "/control/execute vis.mac" );
         ui->SessionStart ();
         delete ui;
     }
