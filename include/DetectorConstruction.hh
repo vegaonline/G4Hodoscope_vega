@@ -34,11 +34,17 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4Material* copper;
     G4Material* lead;
 
+
     G4Material* scintillator;
-    G4Material* C2H4;
+    G4Material* bakelite;
+    G4Material* CH2;
     G4Material* C3H6;
     G4Material* CO2;
     G4Material* ArCO2;
+    G4Material* C2H2F4;
+    G4Material* SF6;
+    G4Material* C4H10;
+    G4Material* RPCGas;
     G4Material* CsI;    
 
     G4VisAttributes* worldVisAtt;

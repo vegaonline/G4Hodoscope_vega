@@ -30,8 +30,13 @@ DetectorConstruction::DetectorConstruction ()
     , C3H6 ( 0 )
     , C2H4 ( 0 )
     , CO2 ( 0 )
+    , C2H2F4 (0)
+    , C4H10 (0)
+    , SF6 (0)
+    , RPCGas(0)
     , ArCO2 ( 0 )
     , CsI ( 0 )
+    , bakelite(0)
     , aluminium ( 0 )
     , copper ( 0 )
     , lead ( 0 )
@@ -51,7 +56,7 @@ DetectorConstruction::DetectorConstruction ()
     , hodoVisAtt ( 0 )
     , GEMVisAtt ( 0 )
 {
-//  ConstructMaterials();
+
 }
 
 DetectorConstruction::~DetectorConstruction ()
@@ -80,7 +85,7 @@ void DetectorConstruction::ConstructMaterials ()
     density = 1.782e-03*g/cm3;
     argongas = new G4Material ( name = "ArgonGas", z = 18, a, density );
 
-    // Elements for micture and compounds
+    // Elements for mixture and compounds
     a = 1.01 * g / mole;
     G4Element* elH = new G4Element ( name = "Hydrogen", symbol = "H", z = 1.0, a );
 
@@ -92,24 +97,57 @@ void DetectorConstruction::ConstructMaterials ()
 
     a = 16.00 * g / mole;
     G4Element* elO = new G4Element ( name = "Oxygen", symbol = "O", z = 8.0, a );
+ 
+    a = 18.998 * g / mole;
+    G4Element* elF = new G4Element( name = "Fluorine", symbol = "F", z = 9.0, a );
+    
+    a = 32.06 * g / mole;
+    G4Element* elS = new G4Element( name = "Sulphur", symbol = "S", z = 16.0, a );
+
 
     // Air
-    density = 1.032 * g / cm3;
+    density = 1.032 * mg / cm3;
     air = new G4Material ( name = "Air", density, nElem = 2 );
     air->AddElement ( elN, fracMass = 70.0 * perCent );
     air->AddElement ( elO, fracMass = 30.0 * perCent );
 
     // CO2
-    density = 1.8714e-3 * g / cm3;
+    density = 1.8714 * mg / cm3;
     CO2 = new G4Material ( name = "CO2", density, nElem = 2 );
     CO2->AddElement ( elC, 1 );
     CO2->AddElement ( elO, 2 );
 
     // Ar-CO2 mixture
-    density = 1.77e-3 * g / cm3;
+    density = 1.77 * mg / cm3;
     ArCO2 = new G4Material ( name = "ArCO2", density, nComp = 2 );
     ArCO2->AddMaterial ( argongas, fracMass = 90.0 * perCent );
     ArCO2->AddMaterial ( CO2, fracMass = 10.0 * perCent );
+
+    // C4H10 (IsoButane) gas
+    density = 2.67 * mg / cm3;
+    G4Material* C4H10 = new G4Material( name = "IsoButane", density, nElem = 2);
+    C4H10->AddElement(elC, 4);
+    C4H10->AddElement(elH, 10);
+
+    // C2H2F4 (Freon) gas 
+    density = 4.55 * mg / cm3;
+    G4Material* C2H4F4 = new G4Material( name = "Freon", density, nElem = 3);
+    C2H2F4->AddElement(elC, 2);
+    C2H2F4->AddElement(elH, 2);
+    C2H2F4->AddElement(elF, 4);
+
+    // SF6 gas
+    density = 6.14 * mg / cm3;
+    G4Material* SF6 = new G4Material( name = "SF6", density, nElem = 2);
+    SF6->AddElement(elS, 1);
+    SF6->AddElement(elF, 6);
+
+    // RPCGas
+    density = 3.569 * mg / cm3;
+    G4Material* RPCGas = new G4Material( name = "RPCGas", density, nElem = 2);
+    RPCGas->AddElement(C4H10, fracMass = 5.0 * perCent);
+    RPCGas->AddElement(SF6, fracMass = 10.0 * perCent);
+    RPCGas->AddElement(C2H2F4, fracMass = 85.0 * perCent);
 
     // scintillator
     density = 1.032 * g / cm3;
@@ -125,9 +163,16 @@ void DetectorConstruction::ConstructMaterials ()
 
     // polyethylene
     density = 0.94 * g / cm3;
-    C2H4 = new G4Material ( name = "Polyethylene", density, nElem = 2 );
-    C2H4->AddElement ( elC, 2 );
-    C2H4->AddElement ( elH, 4 );
+    CH2 = new G4Material ( name = "Polyethylene", density, nElem = 2 );
+    CH2->AddElement ( elC, 1 );
+    CH2->AddElement ( elH, 2 );
+
+    // bakelite
+    density = 1.25 * g /cm3;
+    bakelite = new G4Material( name = "Bakelite", density, nElem = 3);
+    bakelite->AddElement(elC, fracMass = 5.7 * perCent);
+    bakelite->AddElement(elH, fracMass = 77.5 * perCent);
+    bakelite->AddElement(elO, fracMass = 16.8 * perCent);
 
     // Aluminium
     a = 26.982 * g / mole;
