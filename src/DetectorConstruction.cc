@@ -28,7 +28,6 @@ DetectorConstruction::DetectorConstruction ()
     , argongas ( 0 )
     , scintillator ( 0 )
     , C3H6 ( 0 )
-    , C2H4 ( 0 )
     , CO2 ( 0 )
     , C2H2F4 (0)
     , C4H10 (0)
@@ -144,10 +143,10 @@ void DetectorConstruction::ConstructMaterials ()
 
     // RPCGas
     density = 3.569 * mg / cm3;
-    G4Material* RPCGas = new G4Material( name = "RPCGas", density, nElem = 2);
-    RPCGas->AddElement(C4H10, fracMass = 5.0 * perCent);
-    RPCGas->AddElement(SF6, fracMass = 10.0 * perCent);
-    RPCGas->AddElement(C2H2F4, fracMass = 85.0 * perCent);
+    G4Material* RPCGas = new G4Material( name = "RPCGas", density, nComp = 2);
+    RPCGas->AddMaterial(C4H10, fracMass = 5.0 * perCent);
+    RPCGas->AddMaterial(SF6, fracMass = 10.0 * perCent);
+    RPCGas->AddMaterial(C2H2F4, fracMass = 85.0 * perCent);
 
     // scintillator
     density = 1.032 * g / cm3;
@@ -285,7 +284,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
     G4VSolid* gemCuTop = new G4Trd ( "CuTop", dx1Trd, dx2Trd, 0.5 * GEMCuHt, 0.5 * GEMCuHt, dzTrd );
     G4LogicalVolume* gemCuTopLV = new G4LogicalVolume ( gemCuTop, copper, "gemCuTopLV", 0, 0, 0 );
     G4VSolid* gemPoly = new G4Trd ( "Poly", dx1Trd, dx2Trd, 0.5 * GEMPolyHt, 0.5 * GEMPolyHt, dzTrd);
-    G4LogicalVolume* gemPolyLV = new G4LogicalVolume ( gemPoly, C2H4, "gemPolyLV", 0, 0, 0 );
+    G4LogicalVolume* gemPolyLV = new G4LogicalVolume ( gemPoly, CH2, "gemPolyLV", 0, 0, 0 );
     G4VSolid* gemCuBot = new G4Trd ( "CuBot", dx1Trd, dx2Trd, 0.5 * GEMCuHt, 0.5 * GEMCuHt, dzTrd);
     G4LogicalVolume* gemCuBotLV = new G4LogicalVolume ( gemCuBot, copper, "gemCuBotLV", 0, 0, 0 );
     
